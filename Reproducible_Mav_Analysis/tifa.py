@@ -95,13 +95,13 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
         #Graph number of unique insertion sites for each sample (as you add more samples).
         if plots_on:
             n_f+=1
-            cumulative_hits(comb_df,N,n_f,out_fold+'All_sites_cumulative'+'_'+contig+'.png')
+            cumulative_hits(comb_df,N,n_f,out_fold+'All_sites_cumulative'+'_'+contig+'.svg')
 
             #Calculate approximate number of permissible insertion sites
             n_f+=1
-            N_est1_def = cumulative_hits(site_df_ls[0],N,n_f,out_fold+'Default_sites_cumulative'+'_'+contig+'.png')
+            N_est1_def = cumulative_hits(site_df_ls[0],N,n_f,out_fold+'Default_sites_cumulative'+'_'+contig+'.svg')
             n_f+=1
-            N_est1_m1 = cumulative_hits(site_df_ls[1],N,n_f,out_fold+'Motif1_sites_cumulative'+'_'+contig+'.png')
+            N_est1_m1 = cumulative_hits(site_df_ls[1],N,n_f,out_fold+'Motif1_sites_cumulative'+'_'+contig+'.svg')
 
         #Plot histogram of WT genes
         #if plots_on:
@@ -112,7 +112,7 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
         #    plt.hist((1/np.log(10))*np.log1p(data),bins=100,weights=weights)
         #    plt.xlabel('Log$_{10}$(Read Count + 1)')
         #    plt.ylabel('Fraction of TA sites')
-        #    plt.savefig(out_fold+'Read_Distribution_Tn1'+'.png')
+        #    plt.savefig(out_fold+'Read_Distribution_Tn1'+'.svg')
 
         #    n_f+=1
         #    plt.figure()
@@ -121,7 +121,7 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
         #    plt.hist((1/np.log(10))*np.log1p(data),bins=100,weights=weights)
         #    plt.xlabel('Log$_{10}$(Read Count + 1)')
         #    plt.ylabel('Fraction of TA sites')
-        #    plt.savefig(out_fold+'Read_Distribution_Tn1_filtered'+'.png')
+        #    plt.savefig(out_fold+'Read_Distribution_Tn1_filtered'+'.svg')
         #    
         #    plt.show()
         #    exit()
@@ -157,7 +157,7 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
                 #plt.figure(n_f)
                 #weights = len(rank_avg_sr)*[(1/len(rank_avg_sr))]
                 #plt.hist(rank_avg_sr,bins=100,weights=weights)
-                #plt.savefig(out_fold+'Mean_rank_distribution'+'.png')
+                #plt.savefig(out_fold+'Mean_rank_distribution'+'.svg')
 
                 #print('Motif1 Sites:')
                 #att_pval_m1_sr = get_pval_sr(m1_df[name],wt_ind_m1)
@@ -195,7 +195,6 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
         df['Z_ess'] = np.sum(stats.norm.ppf(df[names_ess]),axis=1)/(pow(len(names_ess),0.5))
 
         df.to_csv(out_fold + 'Testing_'+contig+'_df.csv')
-        #exit()
 
         #Parameters for removal of TA sites (protection against biased sites)
         minTArm = 0*1
@@ -238,7 +237,7 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
             plt.hist(np.log2(pval_df['Relative Fitness'][pval_df['Relative Fitness']>0].astype(np.float64)),bins=20, color='r')
             plt.xlabel('log2(Relative Fitness)')
             plt.ylabel('Number of genes (N='+str(len(pval_df['Relative Fitness'])) + ')')
-            plt.savefig(out_fold+'Relative_fitness_hist'+'_'+contig+'.png')
+            plt.savefig(out_fold+'Relative_fitness_hist'+'_'+contig+'.svg')
             #plt.show()
 
     #Concat the 3 results for each contig together
@@ -267,7 +266,8 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
     out_df['Adjusted p-value (Ess)'] = padj_ls
     print('{0} hypotheses rejected for Essential Test out of {1} genes'.format(sum(rej),len(rej)))
 
-    print('Number of genes identified as "ES" but not "GD" (can be caused by differences in statistical cut-offs, proteins with non-essential and essential domains, and in very rare cases (very lucky/unlucky draws during p-value calculation)). By default these will be assigned "NE":',sum(out_df['Essential'] & ~out_df['GD']))
+    print('Number of genes identified as "ES" but not "GD":',sum(out_df['Essential'] & ~out_df['GD']))
+    print('This can be caused by differences in statistical cut-offs, proteins with non-essential and essential domains, and in very rare cases (very lucky/unlucky draws during p-value calculation). By default these will be assigned "NE".')
     if sum(out_df['Essential'] & ~out_df['GD']) > 0:
         print(out_df[out_df['Essential'] & ~out_df['GD']])
 
@@ -277,12 +277,21 @@ def process_data(samp_names,c_df,special_site_files,out_fold,output_csv_name,plo
     out_df.loc[out_df['GD'] & out_df['Essential'],'Group'] = 'ES' #This resolves conflicts between GD and ES (which should be rare). Conflicts will still be reported in the True/False columns.
     out_df.loc[out_df['GA'], 'Group'] = 'GA'
 
-    #Output Dataframe
-    out_df.index = out_df['Gene']
-    out_df = out_df.drop(['Gene','Stouffers GD'],axis=1)
-    out_df = out_df.rename({'product':'Annotation','Relative Fitness':'Estimated Fitness','pvalue':'pval (GD or GA)', 'pvalue_ess':'pval (Essential)', 'Adjusted p-value':'padj (GD or GA)','Adjusted p-value (Ess)':'padj (Essential)'},axis=1)
-    out_df = out_df[['Group','GD','GA','Essential','Estimated Fitness','pval (GD or GA)','padj (GD or GA)','pval (Essential)','padj (Essential)','Annotation']] #Change order of columns
-    out_df.to_csv(out_fold+output_csv_name)
+    #Format and Output Dataframe
+    temp_df = c_df.drop_duplicates(subset='uid').copy()
+    if ('regulatory_class' in temp_df.columns) & ('bound_moiety' in temp_df.columns):
+        temp_df['product2'] = temp_df['regulatory_class'].str.cat(temp_df[['bound_moiety']], sep=', ',na_rep='')
+        temp_df.loc[temp_df['product'].isna(),'product'] = temp_df.loc[temp_df['product'].isna(),'product2']
+
+    out_df = out_df.merge(temp_df[['contig','uid','product']],how='left',left_on='Gene',right_on='uid')
+    out_df = out_df.rename({'Gene':'Genomic Feature','product_y':'Genbank Annotation','pvalue':'pval (GD or GA)', 'pvalue_ess':'pval (ES)', 'Adjusted p-value':'padj (GD or GA)','Adjusted p-value (Ess)':'padj (ES)','Group':'TIFA Prediction','Relative Fitness':'Relative Fitness of Mutant','contig':'Contig'},axis=1)
+    out_df = out_df[['Genomic Feature','Genbank Annotation','Contig','Relative Fitness of Mutant','pval (GD or GA)','padj (GD or GA)','pval (ES)','padj (ES)','TIFA Prediction']] #Change order of columns
+    out_df.to_csv(out_fold+output_csv_name,index=False)
+
+    raw_df = c_df.merge(out_df[['Genomic Feature','TIFA Prediction','Genbank Annotation']],left_on = 'uid',right_on='Genomic Feature',how='left')
+    raw_df = raw_df[['contig','insertion_site','uid','product'] + name_ls + ['TIFA Prediction']]
+    raw_df = raw_df.rename({**{'uid':'Genomic Feature','product':'Genbank Protein Annotation','insertion_site':'Insertion Site','contig':'Contig'},**dict(zip(name_ls,['TnPool'+str(i+1)+' Read Count' for i in range(N)]))},axis=1)
+    raw_df.to_csv(out_fold+'Merged_raw_data.csv',index=False)
 
 def comb_pval(sr):
     _,p_pooled = stats.combine_pvalues(sr,method='stouffer')
@@ -440,12 +449,12 @@ def cumulative_hits(c_df,N,n_f,filename):
     plt.figure(n_f)
     samp_ind = list(range(1,N+1))
     plt.bar(samp_ind,frac_ls,label='Per Sample')
-    plt.plot(samp_ind,cum_frac_ls,'k',label='Cumulative')
-    plt.xlabel('Sample number')
-    plt.ylabel('Fraction of unique TA-sites (per sample or cumulative)')
+    plt.plot(samp_ind,cum_frac_ls,'ko-',label='Cumulative')
+    #plt.xlabel('Sample number')
+    #plt.ylabel('Fraction of unique TA-sites (per sample or cumulative)')
     plt.ylim(0,1)
     plt.legend(loc='upper left')
-    plt.savefig(filename)
+    plt.savefig(filename,bbox_inches='tight')
     #plt.show()
 
     return(cum_hits_ls[-1])

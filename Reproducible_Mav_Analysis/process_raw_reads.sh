@@ -25,25 +25,25 @@ WINDOW_SIZE=6
 
 mkdir -p $TPP_OUT_DIR
 
-COUNTER=0
-INITIAL_START_TIME=$SECONDS
-for FASTQ in $FASTQ_DIR/*1_1.fastq; do
-  (( COUNTER += 1 ))
-  echo "******** Run $COUNTER: $FASTQ ********"
-  READS1=$FASTQ
-  READS2=${FASTQ/_1.fastq/_2.fastq}
-
-  OUTNAME=$(basename $FASTQ)
-  OUTNAME=${OUTNAME/_1.fastq/}
-  ITERATION_START_TIME=$SECONDS
-  $TPP -himar1 -bwa $BWA -bwa-alg $BWA_ALG -ref $REFS -replicon-ids $REPLICON_ID -reads1 $READS1 -reads2 $READS2 -window-size $WINDOW_SIZE -primer $PRIMER -mismatches $MISMATCHES -output $TPP_OUT_DIR/$OUTNAME
-  ITERATION_END_TIME=$SECONDS
-  (( ITERATION_TIME = ITERATION_END_TIME - ITERATION_START_TIME ))
- 
-  (( TOTAL_RUN_TIME = SECONDS - INITIAL_START_TIME )) 
-  (( CURRENT_AVG = TOTAL_RUN_TIME / COUNTER ))
-  echo "******** TPP finished in $ITERATION_TIME seconds! Average iteration time over $COUNTER iterations:  $CURRENT_AVG seconds. ********"
-done
+#COUNTER=0
+#INITIAL_START_TIME=$SECONDS
+#for FASTQ in $FASTQ_DIR/*1_1.fastq; do
+#  (( COUNTER += 1 ))
+#  echo "******** Run $COUNTER: $FASTQ ********"
+#  READS1=$FASTQ
+#  READS2=${FASTQ/_1.fastq/_2.fastq}
+#
+#  OUTNAME=$(basename $FASTQ)
+#  OUTNAME=${OUTNAME/_1.fastq/}
+#  ITERATION_START_TIME=$SECONDS
+#  $TPP -himar1 -bwa $BWA -bwa-alg $BWA_ALG -ref $REFS -replicon-ids $REPLICON_ID -reads1 $READS1 -reads2 $READS2 -window-size $WINDOW_SIZE -primer $PRIMER -mismatches $MISMATCHES -output $TPP_OUT_DIR/$OUTNAME
+#  ITERATION_END_TIME=$SECONDS
+#  (( ITERATION_TIME = ITERATION_END_TIME - ITERATION_START_TIME ))
+# 
+#  (( TOTAL_RUN_TIME = SECONDS - INITIAL_START_TIME )) 
+#  (( CURRENT_AVG = TOTAL_RUN_TIME / COUNTER ))
+#  echo "******** TPP finished in $ITERATION_TIME seconds! Average iteration time over $COUNTER iterations:  $CURRENT_AVG seconds. ********"
+#done
 
 echo "TPP iterations done! Performing post-processing operations:"
 echo "Checking TA sites hit for all samples..."

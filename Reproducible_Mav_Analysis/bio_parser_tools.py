@@ -27,12 +27,13 @@ def build_bases_list_from_gb_record(record):
 
             # Iterate over all base indices for this gene (about 5,000,000 of these for contig_1.gb)
             for base_index in range(
-                    feature.location.start,
-                    feature.location.end):
+                    feature.location.start+2,
+                    feature.location.end-1):
                 
                 # Add 'features' dictionary to the corresponding base pair index 
                 # Note that more than one gene can be stored in a given index of 
                 # bases[], which allows us to account for overlapping genes
+                # Also, indices have been adjusted to shrink "gene" to only where Himar1 can disrupt.
                 bases[base_index].append(feature)
     
     return bases
